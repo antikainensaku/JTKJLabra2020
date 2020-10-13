@@ -66,8 +66,10 @@ Void labTaskFxn(UArg arg0, UArg arg1) {
     I2C_Handle      i2c;
     I2C_Params      i2cParams;
 
-    //UART_Handle 	uartHandle;
-    //I2C_Transaction i2cTransaction;
+    UART_Handle 	uart;
+    UART_Params 	uartParams;
+    //char input;
+    char echo_msg[20];
 
     // JTKJ: Tehtävä 2. Avaa i2c-väylä taskin käyttöön
     // JTKJ: Exercise 2. Open the i2c bus0
@@ -104,6 +106,20 @@ Void labTaskFxn(UArg arg0, UArg arg1) {
 
     // JTKJ: Tehtävä 4. UARTin alustus
     // JTKJ: Exercise 4. Setup UART connection
+	UART_Params_init(&uartParams);
+	uartParams.writeDataMode = UART_DATA_TEXT;
+	uartParams.readDataMode = UART_DATA_TEXT;
+	uartParams.readEcho = UART_ECHO_OFF;
+	uartParams.readMode=UART_MODE_BLOCKING;
+	uartParams.baudRate = 9600; // nopeus 9600baud
+	uartParams.dataLength = UART_LEN_8; // 8
+	uartParams.parityType = UART_PAR_NONE; // n
+	uartParams.stopBits = UART_STOP_ONE; // 1
+
+	uart = UART_open(Board_UART0, &uartParams);
+	if (uart == NULL) {
+		System_abort("Error opening the UART");
+	}
 
     while (1) {
 
@@ -111,18 +127,18 @@ Void labTaskFxn(UArg arg0, UArg arg1) {
         // JTKJ: Exercise 2. Read sensor data and print it to the Debug window
     	//opt3001_get_data(&i2c);
     	char strlux[40];
-    	sprintf(strlux, "%f lux", opt3001_get_data(&i2c));
+    	sprintf(strlux, "%lf lux", opt3001_get_data(&i2c));
     	System_printf("%s\n", strlux);
     	System_flush();
 
     	// JTKJ: Tehtävä 3. Tulosta sensorin arvo merkkijonoon ja kirjoita se ruudulle
 		// JTKJ: Exercise 3. Store the sensor value as char array and print it to the display
     	Display_print0(displayHandle, 1, 1, strlux);
-    	Task_sleep(1000000/Clock_tickPeriod);
-    	Display_clear(displayHandle);
 
     	// JTKJ: Tehtävä 4. Lähetä CSV-muotoinen merkkijono UARTilla
 		// JTKJ: Exercise 4. Send CSV string with UART
+    	sprintf(echo_msg,"id:266,light:%lf\n", opt3001_get_data(&i2c));
+    	UART_write(uart, echo_msg, strlen(echo_msg));
 
     	// Once per second
     	Task_sleep(1000000 / Clock_tickPeriod);
@@ -171,6 +187,7 @@ Int main(void) {
 
     // JTKJ: Tehtävä 4. UART käyttöön ohjelmassa
     // JTKJ: Exercise 4. Use UART in program
+    Board_initUART();
 
     // JTKJ: Tehtävä 1. Painonappi- ja ledipinnit käyttöön tässä
 	// JTKJ: Exercise 1. Open and configure the button and led pins here
