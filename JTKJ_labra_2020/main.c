@@ -137,7 +137,7 @@ Void labTaskFxn(UArg arg0, UArg arg1) {
 
     	// JTKJ: Tehtävä 4. Lähetä CSV-muotoinen merkkijono UARTilla
 		// JTKJ: Exercise 4. Send CSV string with UART
-    	sprintf(echo_msg,"id:266,light:%lf\n", opt3001_get_data(&i2c));
+    	sprintf(echo_msg,"id:266,light:%lf\n\r", opt3001_get_data(&i2c));
     	UART_write(uart, echo_msg, strlen(echo_msg));
 
     	// Once per second
